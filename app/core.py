@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 
 from app.tokenizer import BytePairTokenizer
+from app.model import Block
 
 
 def milestone_1(
@@ -71,8 +72,8 @@ def milestone_2(
     return tokenizer, data, token_embedding, position_embedding
 
 
-def milestone_3():
-    raise NotImplementedError("TODO(milestone 3)")
+def milestone_3(n_embd=64, n_heads=4, block_size=32):
+    return Block(n_embd, n_heads, block_size)
 
 
 def milestone_4():

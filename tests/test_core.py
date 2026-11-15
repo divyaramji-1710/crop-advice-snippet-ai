@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from app.core import milestone_1, milestone_2
+from app.core import milestone_1, milestone_2, milestone_3
 
 
 def test_milestone_1(tmp_path):
@@ -71,9 +71,37 @@ def test_milestone_2():
     assert pos_emb.weight.grad is not None
 
 
-@pytest.mark.skip(reason="start milestone 3")
 def test_milestone_3():
-    raise NotImplementedError
+    torch.manual_seed(1337)
+    block = milestone_3(
+        n_embd=16, n_heads=4, block_size=8
+    )
+    block.eval()
+
+    x = torch.randn(2, 8, 16)
+    result = block(x)
+
+    assert result.shape == x.shape
+    assert torch.isfinite(result).all()
+
+    # Changing future inputs must not affect earlier outputs.
+    changed = x.clone()
+    changed[:, 4:, :] = torch.randn_like(changed[:, 4:, :])
+    changed_result = block(changed)
+
+    torch.testing.assert_close(
+        result[:, :4, :],
+        changed_result[:, :4, :],
+    )
+
+    # Verify gradients reach every trainable parameter.
+    result.square().mean().backward()
+    for parameter in block.parameters():
+        assert parameter.grad is not None
+        assert torch.isfinite(parameter.grad).all()
+
+    with pytest.raises(ValueError):
+        milestone_3(n_embd=15, n_heads=4, block_size=8)
 
 
 @pytest.mark.skip(reason="start milestone 4")
