@@ -213,9 +213,58 @@ def test_milestone_5(tmp_path):
         generator.generate("Tomato", temperature=0)
 
 
-@pytest.mark.skip(reason="start milestone 6")
-def test_milestone_6():
-    raise NotImplementedError
+def test_milestone_6(monkeypatch, capsys):
+    from app.core import milestone_6
+
+    calls = []
+
+    class FakeGenerator:
+        def __init__(self, checkpoint):
+            calls.append(("checkpoint", checkpoint))
+
+        def generate(self, prompt, **options):
+            calls.append(("generate", prompt, options))
+            return "test continuation"
+
+    # Test CLI wiring without loading or retraining a model.
+    monkeypatch.setattr(
+        "app.cli.SnippetGenerator", FakeGenerator
+    )
+
+    milestone_6([
+        "generate", "Tomato plants need",
+        "--checkpoint", "example.pt",
+        "--max-new-tokens", "12",
+        "--temperature", "0.7",
+        "--top-k", "5",
+        "--seed", "4",
+    ])
+
+    output = capsys.readouterr().out
+    assert "test continuation" in output
+    assert "Not verified farming advice" in output
+    assert calls[0] == ("checkpoint", "example.pt")
+    assert calls[1] == (
+        "generate",
+        "Tomato plants need",
+        {
+            "max_new_tokens": 12,
+            "temperature": 0.7,
+            "top_k": 5,
+            "seed": 4,
+        },
+    )
+
+    monkeypatch.setattr(
+        "builtins.input", lambda prompt: "Watering"
+    )
+    milestone_6(["generate"])
+    assert calls[-1][1] == "Watering"
+
+    with pytest.raises(SystemExit) as error:
+        milestone_6(["generate", ""])
+    assert error.value.code == 2
+    
 def test_gpt_forward_and_causality():
     from app.model import GPT
 

@@ -109,5 +109,6 @@ def milestone_5(
     )
 
 
-def milestone_6():
-    raise NotImplementedError("TODO(milestone 6)")
+def milestone_6(argv=None):
+    from app.cli import main
+    return main(argv)
