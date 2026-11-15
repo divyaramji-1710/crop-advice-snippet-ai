@@ -33,6 +33,14 @@ def milestone_1(
         raise ValueError("Could not find the first chapter")
     text = text[chapters[-1].start():]
 
+        # Exclude the back-of-book index and transcriber's notes.
+    back_matter = re.search(
+        r"^[ \t]*(?:INDEX|Transcriber's Notes)[ \t]*\r?$",
+        text,
+        flags=re.MULTILINE | re.IGNORECASE,
+    )
+    if back_matter:
+        text = text[:back_matter.start()]
     # Normalize typography and remove illustration/page markers.
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     text = text.replace("’", "'").replace("‘", "'")
@@ -81,8 +89,24 @@ def milestone_4(**kwargs):
     return train_model(**kwargs)
 
 
-def milestone_5():
-    raise NotImplementedError("TODO(milestone 5)")
+def milestone_5(
+    prompt,
+    checkpoint="artifacts/gpt.pt",
+    max_new_tokens=60,
+    temperature=0.8,
+    top_k=20,
+    seed=0,
+):
+    from app.generation import SnippetGenerator
+
+    generator = SnippetGenerator(checkpoint)
+    return generator.generate(
+        prompt=prompt,
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+        top_k=top_k,
+        seed=seed,
+    )
 
 
 def milestone_6():

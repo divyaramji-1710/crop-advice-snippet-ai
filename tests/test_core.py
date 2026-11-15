@@ -152,9 +152,65 @@ def test_milestone_4(tmp_path):
     )
 
 
-@pytest.mark.skip(reason="start milestone 5")
-def test_milestone_5():
-    raise NotImplementedError
+def test_milestone_5(tmp_path):
+    from app.core import milestone_4, milestone_5
+    from app.generation import SnippetGenerator
+
+    corpus = tmp_path / "corpus.txt"
+    corpus.write_text(
+        "Tomato roots need space. Keep soil evenly moist.\n" * 30,
+        encoding="utf-8",
+    )
+    output = tmp_path / "artifacts"
+
+    milestone_4(
+        corpus=corpus,
+        output_dir=output,
+        steps=1,
+        eval_interval=1,
+        eval_batches=1,
+        batch_size=2,
+        block_size=8,
+        n_embd=16,
+        n_heads=2,
+        n_layers=1,
+        num_merges=4,
+    )
+
+    checkpoint = output / "gpt.pt"
+    options = {
+        "checkpoint": checkpoint,
+        "max_new_tokens": 5,
+        "seed": 3,
+    }
+
+    first = milestone_5("Tomato", **options)
+    second = milestone_5("Tomato", **options)
+    assert isinstance(first, str)
+    assert first == second
+
+    # Top-k=1 chooses the highest-scoring token.
+    generator = SnippetGenerator(checkpoint)
+    prompt = torch.tensor(
+        [generator.tokenizer.encode("Tomato")],
+        dtype=torch.long,
+    )
+    with torch.no_grad():
+        logits, _ = generator.model(
+            prompt[:, -generator.model.block_size:]
+        )
+    expected_id = logits[0, -1].argmax().item()
+
+    result = generator.generate(
+        "Tomato", max_new_tokens=1, top_k=1
+    )
+    assert result == generator.tokenizer.decode([expected_id])
+
+    with pytest.raises(ValueError):
+        generator.generate("")
+
+    with pytest.raises(ValueError):
+        generator.generate("Tomato", temperature=0)
 
 
 @pytest.mark.skip(reason="start milestone 6")
