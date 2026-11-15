@@ -20,7 +20,7 @@ Tick these off as you go, and commit after each one.
       Hint: Apply Byte-Pair Encoding and create token embeddings.
 - [x] **3. Build the causal self-attention mechanism and assemble the transformer block.**  
       Hint: Construct the Causal Self-Attention layer and stack Transformer Blocks.
-- [ ] **4. Train the GPT model using the agricultural text data.**  
+- [x] **4. Train the GPT model using the agricultural text data.**  
       Hint: Implement the training loop for your custom GPT model.
 - [ ] **5. Implement a text generation function to provide concise advice snippets.**  
       Hint: Develop a sampling strategy for coherent text generation.
@@ -72,3 +72,22 @@ It reduces 183,328 bytes to 111,486 tokens with a vocabulary of
 
 Token and position embeddings are initialized here and learned
 during model training.
+
+## Training results
+
+The GPT has 192,832 parameters and was trained for 400 steps.
+The final 10% of the text was held out before fitting the BPE tokenizer.
+
+| Step | Training loss | Validation loss |
+| --- | --- | --- |
+| 0 | 5.940 | 5.940 |
+| 100 | 3.543 | 3.838 |
+| 200 | 3.283 | 3.611 |
+| 300 | 3.099 | 3.425 |
+| 400 | 2.932 | 3.306 |
+
+Both losses decreased. Held-out performance improved, although these
+losses alone do not establish coherent or factually correct advice.
+
+The checkpoint is saved in artifacts/gpt.pt.
+Training settings and losses are saved in artifacts/training.json.

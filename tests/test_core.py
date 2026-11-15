@@ -104,9 +104,52 @@ def test_milestone_3():
         milestone_3(n_embd=15, n_heads=4, block_size=8)
 
 
-@pytest.mark.skip(reason="start milestone 4")
-def test_milestone_4():
-    raise NotImplementedError
+def test_milestone_4(tmp_path):
+    from app.core import milestone_4
+    from app.model import GPT
+
+    corpus = tmp_path / "corpus.txt"
+    corpus.write_text(
+        "Tomato roots need space. Keep soil evenly moist.\n" * 30,
+        encoding="utf-8",
+    )
+    output = tmp_path / "artifacts"
+
+    report = milestone_4(
+        corpus=corpus,
+        output_dir=output,
+        steps=2,
+        eval_interval=2,
+        eval_batches=1,
+        batch_size=2,
+        block_size=8,
+        n_embd=16,
+        n_heads=2,
+        n_layers=1,
+        num_merges=4,
+    )
+
+    assert [row["step"] for row in report["history"]] == [0, 2]
+    assert all(
+        torch.isfinite(torch.tensor(row[key]))
+        for row in report["history"]
+        for key in ("train", "val")
+    )
+    assert (output / "training.json").exists()
+
+    checkpoint = torch.load(
+        output / "gpt.pt",
+        map_location="cpu",
+        weights_only=True,
+    )
+    restored = GPT(**checkpoint["config"])
+    restored.load_state_dict(checkpoint["model_state"])
+
+    inputs = torch.zeros((1, 4), dtype=torch.long)
+    logits, _ = restored(inputs)
+    assert logits.shape == (
+        1, 4, checkpoint["config"]["vocab_size"]
+    )
 
 
 @pytest.mark.skip(reason="start milestone 5")
@@ -117,3 +160,37 @@ def test_milestone_5():
 @pytest.mark.skip(reason="start milestone 6")
 def test_milestone_6():
     raise NotImplementedError
+def test_gpt_forward_and_causality():
+    from app.model import GPT
+
+    torch.manual_seed(1337)
+    model = GPT(
+        vocab_size=32,
+        block_size=8,
+        n_embd=16,
+        n_heads=4,
+        n_layers=2,
+    )
+
+    inputs = torch.randint(32, (2, 8))
+    targets = torch.randint(32, (2, 8))
+    logits, loss = model(inputs, targets)
+
+    assert logits.shape == (2, 8, 32)
+    assert loss.ndim == 0
+    assert torch.isfinite(loss)
+
+    # Future tokens must not affect earlier predictions.
+    changed = inputs.clone()
+    changed[:, 4:] = (changed[:, 4:] + 1) % 32
+    changed_logits, _ = model(changed)
+
+    torch.testing.assert_close(
+        logits[:, :4],
+        changed_logits[:, :4],
+    )
+
+    loss.backward()
+    for parameter in model.parameters():
+        assert parameter.grad is not None
+        assert torch.isfinite(parameter.grad).all()

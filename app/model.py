@@ -65,6 +65,7 @@ class FeedForward(nn.Module):
 class Block(nn.Module):
     def __init__(self, n_embd, n_heads, block_size):
         super().__init__()
+
         if n_embd < 1 or n_heads < 1 or block_size < 1:
             raise ValueError("Model dimensions must be positive")
         if n_embd % n_heads != 0:
@@ -81,3 +82,48 @@ class Block(nn.Module):
         x = x + self.sa(self.ln1(x))
         x = x + self.ff(self.ln2(x))
         return x
+
+
+class GPT(nn.Module):
+    def __init__(
+        self,
+        vocab_size,
+        block_size=32,
+        n_embd=64,
+        n_heads=4,
+        n_layers=3,
+    ):
+        super().__init__()
+        self.block_size = block_size
+        self.token_embedding = nn.Embedding(vocab_size, n_embd)
+        self.position_embedding = nn.Embedding(block_size, n_embd)
+        self.blocks = nn.Sequential(*[
+            Block(n_embd, n_heads, block_size)
+            for _ in range(n_layers)
+        ])
+        self.ln_f = nn.LayerNorm(n_embd)
+        self.lm_head = nn.Linear(n_embd, vocab_size)
+
+    def forward(self, idx, targets=None):
+        B, T = idx.shape
+        if T < 1 or T > self.block_size:
+            raise ValueError(
+                "Sequence length is outside the context window"
+            )
+
+        positions = torch.arange(T, device=idx.device)
+        x = (
+            self.token_embedding(idx)
+            + self.position_embedding(positions)
+        )
+        x = self.ln_f(self.blocks(x))
+        logits = self.lm_head(x)
+
+        loss = None
+        if targets is not None:
+            loss = F.cross_entropy(
+                logits.reshape(B * T, -1),
+                targets.reshape(B * T),
+            )
+
+        return logits, loss

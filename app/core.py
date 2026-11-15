@@ -76,8 +76,9 @@ def milestone_3(n_embd=64, n_heads=4, block_size=32):
     return Block(n_embd, n_heads, block_size)
 
 
-def milestone_4():
-    raise NotImplementedError("TODO(milestone 4)")
+def milestone_4(**kwargs):
+    from app.training import train_model
+    return train_model(**kwargs)
 
 
 def milestone_5():
