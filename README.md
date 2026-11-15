@@ -91,3 +91,50 @@ losses alone do not establish coherent or factually correct advice.
 
 The checkpoint is saved in artifacts/gpt.pt.
 Training settings and losses are saved in artifacts/training.json.
+
+## Current results and limitations
+
+The project implements byte-level BPE, learned token and position
+embeddings, causal self-attention, transformer blocks, GPT training,
+checkpoint loading, and a command-line generation interface.
+
+The larger model has 684,352 parameters. Its validation loss reached
+2.640 at step 1500, then rose to 3.021 at step 3000 while training loss
+continued falling, indicating overfitting.
+
+Example CLI command:
+
+```powershell
+.\.venv\Scripts\python.exe -m app.cli generate "Tomato plants need"
+```
+
+Observed continuation:
+
+```text
+s are taken they makes nearly matures, and soil was been prevented flavor by sold for gath
+```
+
+Generation works mechanically, but output remains grammatically
+unreliable and does not yet meet the coherent-advice goal.
+This is an educational prototype, not verified farming guidance.
+
+The default CLI checkpoint is artifacts/best-model/best.pt.
+The 12 examples in data/examples.jsonl are an experimental dataset
+draft and were not used to train this checkpoint.
+
+## Data provenance
+
+The trained model uses Tomato Culture: A Practical Treatise on the
+Tomato by W. W. Tracy, downloaded from Project Gutenberg:
+https://www.gutenberg.org/ebooks/28011
+
+Original file: data/raw/tomato-culture.txt
+Cleaned file: data/corpus.txt
+
+Cleaning removes front matter, the index, transcriber's notes,
+Gutenberg footer, illustration markers, and emphasis markers.
+It normalizes whitespace and apostrophes.
+
+The separate data/examples.jsonl file contains AI-assisted,
+source-attributed example drafts. It was not used to train the
+submitted checkpoint.
