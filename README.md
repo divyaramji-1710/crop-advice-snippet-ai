@@ -16,7 +16,7 @@ Tick these off as you go, and commit after each one.
 
 - [x] **1. Collect a small corpus of agricultural advice, crop guides, or farming articles.**  
       Hint: Gathering and cleaning your raw text data.
-- [ ] **2. Implement the byte-pair tokenizer and generate embeddings from the agricultural text.**  
+- [x] **2. Implement the byte-pair tokenizer and generate embeddings from the agricultural text.**  
       Hint: Apply Byte-Pair Encoding and create token embeddings.
 - [ ] **3. Build the causal self-attention mechanism and assemble the transformer block.**  
       Hint: Construct the Causal Self-Attention layer and stack Transformer Blocks.
@@ -63,3 +63,12 @@ The cleaned training text is saved in data/corpus.txt.
 
 This historical corpus is used for an educational text-generation
 experiment. Generated text is not verified modern farming advice.
+
+## Tokenization results
+
+The byte-level BPE tokenizer learns 64 merges from the corpus.
+It reduces 183,328 bytes to 111,486 tokens with a vocabulary of
+320 tokens. Encoding and decoding reproduce the input exactly.
+
+Token and position embeddings are initialized here and learned
+during model training.

@@ -1,6 +1,10 @@
 """Project implementation, built one milestone at a time."""
 import re
 from pathlib import Path
+import torch
+import torch.nn as nn
+
+from app.tokenizer import BytePairTokenizer
 
 
 def milestone_1(
@@ -40,7 +44,7 @@ def milestone_1(
 
     # Remove Gutenberg's plain-text emphasis markers.
     text = text.replace("=", "").replace("_", "")
-    
+
     # Join wrapped lines while preserving paragraph boundaries.
     paragraphs = re.split(r"\n[ \t]*\n+", text)
     paragraphs = [
@@ -55,8 +59,16 @@ def milestone_1(
     return cleaned
 
 
-def milestone_2():
-    raise NotImplementedError("TODO(milestone 2)")
+def milestone_2(
+    text, num_merges=64, n_embd=64, block_size=32,
+):
+    tokenizer = BytePairTokenizer().fit(text, num_merges)
+    data = torch.tensor(tokenizer.encode(text), dtype=torch.long)
+
+    token_embedding = nn.Embedding(tokenizer.vocab_size, n_embd)
+    position_embedding = nn.Embedding(block_size, n_embd)
+
+    return tokenizer, data, token_embedding, position_embedding
 
 
 def milestone_3():

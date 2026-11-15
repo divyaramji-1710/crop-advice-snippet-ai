@@ -1,7 +1,8 @@
 """Tests for each project milestone."""
 import pytest
+import torch
 
-from app.core import milestone_1
+from app.core import milestone_1, milestone_2
 
 
 def test_milestone_1(tmp_path):
@@ -38,9 +39,36 @@ def test_milestone_1(tmp_path):
     assert output.read_text(encoding="utf-8") == text
 
 
-@pytest.mark.skip(reason="start milestone 2")
 def test_milestone_2():
-    raise NotImplementedError
+    text = "tomato roots need space. " * 20
+    tokenizer, data, tok_emb, pos_emb = milestone_2(
+        text, num_merges=8, n_embd=16, block_size=8,
+    )
+
+    assert tokenizer.decode(data.tolist()) == text
+    assert tokenizer.vocab_size > 256
+    assert len(data) < len(text.encode("utf-8"))
+    assert data.dtype == torch.long
+    assert int(data.max()) < tokenizer.vocab_size
+
+    # The first merge must be the most frequent byte pair.
+    from collections import Counter
+    raw = list(text.encode("utf-8"))
+    expected_pair = Counter(zip(raw, raw[1:])).most_common(1)[0][0]
+    assert tokenizer.merges[0][0] == expected_pair
+
+    # Byte tokens also support text absent from training.
+    unseen = "New crop: café 🌱"
+    assert tokenizer.decode(tokenizer.encode(unseen)) == unseen
+
+    batch = data[:8].unsqueeze(0)
+    embedded = tok_emb(batch) + pos_emb(torch.arange(8))
+    assert embedded.shape == (1, 8, 16)
+
+    # Both embedding tables receive gradients.
+    embedded.sum().backward()
+    assert tok_emb.weight.grad is not None
+    assert pos_emb.weight.grad is not None
 
 
 @pytest.mark.skip(reason="start milestone 3")
