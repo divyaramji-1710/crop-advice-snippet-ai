@@ -14,7 +14,7 @@ This project develops an AI-powered CLI tool designed for farmers. It generates 
 
 Tick these off as you go, and commit after each one.
 
-- [ ] **1. Collect a small corpus of agricultural advice, crop guides, or farming articles.**  
+- [x] **1. Collect a small corpus of agricultural advice, crop guides, or farming articles.**  
       Hint: Gathering and cleaning your raw text data.
 - [ ] **2. Implement the byte-pair tokenizer and generate embeddings from the agricultural text.**  
       Hint: Apply Byte-Pair Encoding and create token embeddings.
@@ -52,3 +52,14 @@ reaches GitHub, treat it as leaked and make a new one.
 - Experiment with different model sizes or hyperparameters to improve the relevance and quality of the generated advice.
 - Implement a simple mechanism to filter or re-rank generated advice snippets to ensure conciseness and direct relevance.
 - Explore methods to make the advice more actionable, perhaps by including specific steps or recommendations.
+
+## Training corpus
+
+Source: W. W. Tracy, *Tomato Culture: A Practical Treatise on the Tomato*.
+https://www.gutenberg.org/ebooks/28011
+
+The original download is preserved in data/raw/tomato-culture.txt.
+The cleaned training text is saved in data/corpus.txt.
+
+This historical corpus is used for an educational text-generation
+experiment. Generated text is not verified modern farming advice.

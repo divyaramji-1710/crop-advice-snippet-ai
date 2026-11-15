@@ -1,41 +1,63 @@
-"""Your tests. Each milestone in README.md gets one here: write the test first, then make it pass.
-
-They start skipped. Remove the `skip` line as you work on each milestone.
-"""
+"""Tests for each project milestone."""
 import pytest
 
-# Milestone 1: Collect a small corpus of agricultural advice, crop guides, or farming articles.
-@pytest.mark.skip(reason="remove this line when you start milestone 1")
-def test_milestone_1():
-    raise NotImplementedError("write the test for milestone 1")
+from app.core import milestone_1
 
 
-# Milestone 2: Implement the byte-pair tokenizer and generate embeddings from the agricultural text.
-@pytest.mark.skip(reason="remove this line when you start milestone 2")
+def test_milestone_1(tmp_path):
+    source = tmp_path / "raw.txt"
+    output = tmp_path / "prepared" / "corpus.txt"
+
+    source.write_text(
+        "Gutenberg header\n"
+        "Contents\n"
+        "  CHAPTER I\n"
+        "  Botany 1\n\n"
+        "CHAPTER I\n\n"
+        "Botany of the Tomato\n\n"
+        "The tomato’s roots\n"
+        "need space.\n\n"
+        "[Illustration: A tomato plant.]\n"
+        "[Pg 2]\n"
+        "Keep paragraphs separate.\n\n"
+        "*** END OF THE PROJECT GUTENBERG EBOOK TEST ***\n"
+        "License footer",
+        encoding="utf-8",
+    )
+
+    text = milestone_1(source, output)
+
+    assert text.startswith("CHAPTER I\n\nBotany")
+    assert "The tomato's roots need space." in text
+    assert "\n\nKeep paragraphs separate." in text
+    assert "Contents" not in text
+    assert "Gutenberg header" not in text
+    assert "License footer" not in text
+    assert "[Illustration:" not in text
+    assert "[Pg" not in text
+    assert output.read_text(encoding="utf-8") == text
+
+
+@pytest.mark.skip(reason="start milestone 2")
 def test_milestone_2():
-    raise NotImplementedError("write the test for milestone 2")
+    raise NotImplementedError
 
 
-# Milestone 3: Build the causal self-attention mechanism and assemble the transformer block.
-@pytest.mark.skip(reason="remove this line when you start milestone 3")
+@pytest.mark.skip(reason="start milestone 3")
 def test_milestone_3():
-    raise NotImplementedError("write the test for milestone 3")
+    raise NotImplementedError
 
 
-# Milestone 4: Train the GPT model using the agricultural text data.
-@pytest.mark.skip(reason="remove this line when you start milestone 4")
+@pytest.mark.skip(reason="start milestone 4")
 def test_milestone_4():
-    raise NotImplementedError("write the test for milestone 4")
+    raise NotImplementedError
 
 
-# Milestone 5: Implement a text generation function to provide concise advice snippets.
-@pytest.mark.skip(reason="remove this line when you start milestone 5")
+@pytest.mark.skip(reason="start milestone 5")
 def test_milestone_5():
-    raise NotImplementedError("write the test for milestone 5")
+    raise NotImplementedError
 
 
-# Milestone 6: Create a CLI where users can input a crop or problem and get advice.
-@pytest.mark.skip(reason="remove this line when you start milestone 6")
+@pytest.mark.skip(reason="start milestone 6")
 def test_milestone_6():
-    raise NotImplementedError("write the test for milestone 6")
-
+    raise NotImplementedError
